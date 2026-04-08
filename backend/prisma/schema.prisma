@@ -1,0 +1,134 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum DocumentStatus {
+  ACTIVE
+  EXPIRED
+  ARCHIVED
+  PENDING
+  DRAFT
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  PENDING_REVIEW
+}
+
+enum RenewalStatus {
+  UPCOMING
+  RENEWED
+  OVERDUE
+}
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  name        String
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  documents   Document[]
+
+  @@map("docsafe_categories")
+}
+
+model Document {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenant_id   String         @db.Uuid
+  title       String
+  description String?
+  
+  category_id String?        @db.Uuid
+  category    Category?      @relation(fields: [category_id], references: [id])
+  
+  file_url    String?
+  status      DocumentStatus @default(DRAFT)
+  issue_date  DateTime?
+  expiry_date DateTime?
+
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+
+  compliance_items ComplianceItem[]
+  renewal_records  RenewalRecord[]
+  document_events  DocumentEvent[]
+
+  @@map("docsafe_documents")
+}
+
+model ComplianceItem {
+  id          String           @id @default(uuid()) @db.Uuid
+  tenant_id   String           @db.Uuid
+  
+  document_id String           @db.Uuid
+  document    Document         @relation(fields: [document_id], references: [id])
+  
+  status      ComplianceStatus @default(PENDING_REVIEW)
+  notes       String?
+
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  @@map("docsafe_compliance_items")
+}
+
+model RenewalRecord {
+  id           String        @id @default(uuid()) @db.Uuid
+  tenant_id    String        @db.Uuid
+  
+  document_id  String        @db.Uuid
+  document     Document      @relation(fields: [document_id], references: [id])
+  
+  status       RenewalStatus @default(UPCOMING)
+  renewal_date DateTime
+  notes        String?
+
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+
+  @@map("docsafe_renewal_records")
+}
+
+model DocumentEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  
+  document_id  String   @db.Uuid
+  document     Document @relation(fields: [document_id], references: [id])
+  
+  action       String
+  performed_by String   @db.Uuid
+  notes        String?
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("docsafe_document_events")
+}
+
+enum Role {
+  ADMIN
+  USER
+  AUDITOR
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  email      String   @unique
+  password   String
+  role       Role     @default(USER)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("docsafe_users")
+}
