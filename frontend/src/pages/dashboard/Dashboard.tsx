@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { 
   FileText, AlertCircle, Clock, ShieldCheck, 
   Activity 
 } from 'lucide-react';
-
-const API_URL = 'http://localhost:3000';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -16,19 +14,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/dashboard/summary`);
-        if (res.data?.success) {
-          setStats(res.data.data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    api.get('/dashboard/summary').then(res => {
+      if (res.data?.success) {
+        setStats(res.data.data);
       }
-    };
-    fetchStats();
+      setLoading(false);
+    });
   }, []);
 
   const statCards = [

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { Search, Filter, File } from 'lucide-react';
-
-const API_URL = 'http://localhost:3000';
 
 const DocumentList = () => {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -11,7 +9,7 @@ const DocumentList = () => {
   useEffect(() => {
     const fetchDocs = async () => {
       try {
-        const res = await axios.get(`${API_URL}/documents`);
+        const res = await api.get('/documents');
         if (res.data?.success) {
           setDocuments(res.data.data);
         }
