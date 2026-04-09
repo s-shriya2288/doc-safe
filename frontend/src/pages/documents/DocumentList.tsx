@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Search, Filter, MoreVertical, File } from 'lucide-react';
+import { Search, Filter, File } from 'lucide-react';
 
 const API_URL = 'http://localhost:3000';
 
